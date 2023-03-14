@@ -7,37 +7,24 @@ use App\Http\Requests\CreateShopItems;
 use App\Models\Artist;
 use App\Models\Shop;
 use App\Repositories\UploadFileRepository;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class ShopController extends Controller
 {
-    /**
-     * Constructor Function
-     *
-     * @param App\Repositories\UploadFileRepository $uploadFileRepository
-     */
     public function __construct(public UploadFileRepository $uploadFileRepository)
     {
         $this->uploadFileRepository = $uploadFileRepository;
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function index(): View
     {
         return view('admin.shop_item.index', [
             'shop_items' => Shop::orderBy('id', 'DESC')->paginate(10),
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function create(): View
     {
         return view('admin.shop_item.create', [
             'action' => "Add",
@@ -47,13 +34,7 @@ class ShopController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(CreateShopItems $request)
+    public function store(CreateShopItems $request): RedirectResponse
     {
         $data = $request->validated();
         if ($file = $request->file('item_filename')) {
@@ -61,17 +42,10 @@ class ShopController extends Controller
         }
         Shop::create($data);
 
-        return redirect()->route('admin.shop.index')
-            ->with('success', 'Data Added Successfully !');
+        return to_route('admin.shop.index')->with('success', 'Data Added Successfully !');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Shop $shop)
+    public function edit(Shop $shop): View
     {
         return view('admin.shop_item.create', [
             'action' => "Edit",
@@ -82,39 +56,24 @@ class ShopController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
-    public function update(CreateShopItems $request, Shop $shop)
+    public function update(CreateShopItems $request, Shop $shop): RedirectResponse
     {
         $data = $request->validated();
         if ($file = $request->file('item_filename')) {
-            unlink(Shop::UPLOAD_PATH.$shop->item_filename);
+            $this->uploadFileRepository->removeFile(Shop::UPLOAD_PATH, $shop->item_filename);
             $data['item_filename'] = $this->uploadFileRepository->uploadFile('shop', $file);
         }
         $shop->update($data);
 
-        return redirect()->route('admin.shop.index')
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.shop.index')->with('success', 'Data Updated Successfully !');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Shop $shop)
+    public function destroy(Shop $shop): RedirectResponse
     {
         $path = public_path(Shop::UPLOAD_PATH);
-        unlink($path.'/'.$shop->item_filename);
+        $this->uploadFileRepository->removeFile($path, $shop->item_filename, true);
         $shop->delete();
 
-        return redirect()->route('admin.shop_item.index')
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.shop.index')->with('success', 'Data Updated Successfully !');
     }
 }

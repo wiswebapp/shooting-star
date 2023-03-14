@@ -72,4 +72,10 @@ class UploadFileRepository
 
         return $imageName;
     }
+
+    public function removeFile($path, $fileName, $addSeparator = false): bool
+    {
+        $addSeparator = ($addSeparator) ? '/' : '';
+        return unlink($path . $addSeparator . $fileName);
+    }
 }

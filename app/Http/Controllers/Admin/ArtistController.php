@@ -7,39 +7,27 @@ use App\Http\Requests\CreateArtist;
 use App\Models\Artist;
 use App\Models\ArtistImage;
 use App\Repositories\UploadFileRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ArtistController extends Controller
 {
 
-    /**
-     * Constructor Function
-     *
-     * @param App\Repositories\UploadFileRepository $uploadFileRepository
-     */
     public function __construct(public UploadFileRepository $uploadFileRepository)
     {
         $this->uploadFileRepository = $uploadFileRepository;
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function index(): View
     {
         return view('admin.artist.index', [
             'artist' => Artist::orderBy('id', 'desc')->paginate(10)
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function create(): View
     {
         return view('admin.artist.create', [
             'action' => "Add",
@@ -48,13 +36,7 @@ class ArtistController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  App\Http\Requests\CreateArtist  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(CreateArtist $request)
+    public function store(CreateArtist $request): RedirectResponse
     {
         $data = $request->validated();
         if ($file = $request->file('cover_image')) {
@@ -62,17 +44,10 @@ class ArtistController extends Controller
         }
         Artist::create($data);
 
-        return redirect()->route('admin.artist.index')
-            ->with('success', 'Data Added Successfully !');
+        return to_route('admin.artist.index')->with('success', 'Data Added Successfully !');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param App\Models\Artist  $artist
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Artist $artist)
+    public function edit(Artist $artist): View
     {
         return view('admin.artist.create', [
             'action' => 'Edit',
@@ -82,62 +57,35 @@ class ArtistController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  App\Http\Requests\CreateArtist  $request
-     * @param App\Models\Artist  $artist
-     * @return \Illuminate\Http\Response
-     */
-    public function update(CreateArtist $request, Artist $artist)
+    public function update(CreateArtist $request, Artist $artist): RedirectResponse
     {
         $data = $request->validated();
         if ($file = $request->file('cover_image')) {
-            unlink(Artist::UPLOAD_COVER_PATH.$artist->artist_cover_image);
+            $this->uploadFileRepository->removeFile(Artist::UPLOAD_COVER_PATH, $artist->artist_cover_image);
             $data['artist_cover_image'] = $this->uploadFileRepository->uploadFile('artist_cover', $file);
         }
         $artist->update($data);
 
-        return redirect()->route('admin.artist.index')
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.artist.index')->with('success', 'Data Updated Successfully !');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param App\Models\Artist  $artist
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Artist $artist)
+    public function destroy(Artist $artist): RedirectResponse
     {
         $path = public_path(Artist::UPLOAD_COVER_PATH);
-        unlink($path.'/'.$artist->artist_cover_image);
+        $this->uploadFileRepository->removeFile($path, $artist->artist_cover_image, true);
         $artist->delete();
 
-        return redirect()->route('admin.artist.index')
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.artist.index')->with('success', 'Data Updated Successfully !');
     }
 
-    /**
-     * Return the page for upload images.
-     *
-     * @param App\Models\Artist $artist
-     * @return \Illuminate\Http\Response
-     */
-    public function gallery(Artist $artist)
+    public function gallery(Artist $artist): View
     {
         return view('admin.artist.gallery.index', [
             'artist' => $artist
         ]);
     }
 
-    /**
-     * Upload images.
-     *
-     * @param App\Models\Artist $artist
-     * @return json
-     */
-    public function upload(Request $request, Artist $artist)
+    public function upload(Request $request, Artist $artist): JsonResponse
     {
         $imageSize = $request->file('file')->getSize();
         $imageName = $this->uploadFileRepository->uploadFile(
@@ -158,16 +106,10 @@ class ArtistController extends Controller
         ]);
     }
 
-    /**
-     * Delete Upload images.
-     *
-     * @param App\Models\Artist $artist
-     * @return json
-     */
-    public function removeUpload(Request $request, Artist $artist)
+    public function removeUpload(Request $request, Artist $artist): JsonResponse
     {
         $path = public_path(Artist::UPLOAD_PATH.$artist->id);
-        unlink($path.'/'.$request->file_name);
+        $this->uploadFileRepository->removeFile($path, $request->file_name, true);
         $data = ArtistImage::where('filename', $request->file_name);
         $data->delete();
 

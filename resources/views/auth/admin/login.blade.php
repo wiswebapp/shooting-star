@@ -9,7 +9,10 @@
 <style>
     body {
         font-family: Calibri, Helvetica, sans-serif;
-        background-color: #a2d9e591;
+        background: url("{{asset('site_data/Images3.jpg')}}");
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
     }
     button {
         background-color: #4CAF50;
@@ -29,14 +32,17 @@
         box-sizing: border-box;
     }
     button:hover {
-        opacity: 0.7;
+        opacity: 0.9;
         color: black;
     }
     .container {
         border-radius: 10px;
-        margin: 0 30em;
+        color: white;
+        background-color: #00000059;
+        margin: auto;
+        width: 30%;
         padding: 25px;
-        background-color: lightblue;
+        box-shadow: 0 0 10px #ffffff52;
     }
     .alert {
         background: red;
@@ -54,7 +60,7 @@
 </head>
 <body>
     <center>
-        <h1> Admin Login </h1>
+        <h1 style="text-shadow: 2px 2px 10px #ffffff94"> Admin Login </h1>
 
         @if ($errors->any())
         <div class="alert">

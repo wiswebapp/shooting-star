@@ -6,36 +6,24 @@ use App\Models\OpenCall;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateOpenCall;
 use App\Repositories\UploadFileRepository;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class OpenCallController extends Controller
 {
-    /**
-     * Constructor Function
-     *
-     * @param App\Repositories\UploadFileRepository $uploadFileRepository
-     */
+
     public function __construct(public UploadFileRepository $uploadFileRepository)
     {
         $this->uploadFileRepository = $uploadFileRepository;
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function index(): View
     {
         $data = OpenCall::orderBy('id', 'DESC')->paginate(10);
         return view('admin.opencall.index', compact('data'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function create(): View
     {
         $data['action'] = "Add";
         $data['method'] = "POST";
@@ -44,13 +32,7 @@ class OpenCallController extends Controller
         return view('admin.opencall.create', compact('data'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  App\Http\Requests\CreateOpenCall  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(CreateOpenCall $request)
+    public function store(CreateOpenCall $request): RedirectResponse
     {
         $data = $request->validated();
         if ($file = $request->file('cover_image')) {
@@ -58,28 +40,15 @@ class OpenCallController extends Controller
         }
         OpenCall::create($data);
 
-        return redirect()->route('admin.opencall.index')
-            ->with('success', 'Data Added Successfully !');
+        return to_route('admin.opencall.index')->with('success', 'Data Added Successfully !');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\OpenCall  $openCall
-     * @return \Illuminate\Http\Response
-     */
-    public function show(OpenCall $opencall)
+    public function show(OpenCall $opencall): View
     {
         return view('admin.opencall.show', compact('opencall'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\OpenCall  $openCall
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(OpenCall $opencall)
+    public function edit(OpenCall $opencall): View
     {
         $data['action'] = "Edit";
         $data['method'] = "PUT";
@@ -89,38 +58,24 @@ class OpenCallController extends Controller
         return view('admin.opencall.create', compact('data'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  App\Http\Requests\CreateOpenCall  $request
-     * @param  \App\Models\OpenCall  $openCall
-     * @return \Illuminate\Http\Response
-     */
-    public function update(CreateOpenCall $request, OpenCall $opencall)
+    public function update(CreateOpenCall $request, OpenCall $opencall): RedirectResponse
     {
         $data = $request->validated();
         if ($file = $request->file('cover_image')) {
-            unlink(Opencall::UPLOAD_PATH.$opencall->cover_image);
+            $this->uploadFileRepository->removeFile(Opencall::UPLOAD_PATH, $opencall->cover_image);
             $data['cover_image'] = $this->uploadFileRepository->uploadFile('opencall', $file);
         }
         $opencall->update($data);
 
-        return redirect()->route('admin.opencall.index')
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.opencall.index')->with('success', 'Data Updated Successfully !');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\OpenCall  $openCall
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(OpenCall $opencall)
+    public function destroy(OpenCall $opencall): RedirectResponse
     {
         $path = public_path(OpenCall::UPLOAD_PATH);
-        unlink($path.'/'.$opencall->cover_image);
+        $this->uploadFileRepository->removeFile($path, $opencall->cover_image, true);
         $opencall->delete();
 
-        return redirect()->route('admin.opencall.index')->with('success', 'Data Updated Successfully !');
+        return to_route('admin.opencall.index')->with('success', 'Data Updated Successfully !');
     }
 }

@@ -40,7 +40,7 @@
     <div class="container text-center">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-7">
-                <h4 class="text-uppercase">{{$opencall->title}} . ({{date('d M', strtotime($opencall->start_date))}} - {{date('d M', strtotime($opencall->end_date))}})</h4>
+                <h4 class="text-uppercase">{{$opencall->title}} . ({{ $opencall->start_date }} - {{ $opencall->end_date }})</h4>
                 <div class="opencall-description">
                     {!! $opencall->description !!}
                 </div>

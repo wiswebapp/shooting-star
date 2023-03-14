@@ -6,21 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateOpenCallForm;
 use App\Models\OpenCall;
 use App\Models\OpenCallFormField;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class OpenCallFormController extends Controller
 {
     protected $fieldType = ['text', 'number', 'email', 'password', 'textarea', 'select', 'multiselect', 'image', 'file'];
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @param Request $request
-     * @param int $openCallId
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request, $openCallId)
+    public function index(Request $request, $openCallId): View
     {
         $data = [
             'openCall' => OpenCall::findOrFail($openCallId),
@@ -31,13 +26,7 @@ class OpenCallFormController extends Controller
         return view('admin.opencall.form.index', compact('data'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @param int $openCallId
-     * @return \Illuminate\Http\Response
-     */
-    public function create($openCallId)
+    public function create($openCallId): View
     {
         $data = [
             'action' => "Add",
@@ -50,31 +39,16 @@ class OpenCallFormController extends Controller
         return view('admin.opencall.form.create', compact('data'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  App\Http\Requests\CreateOpenCallForm  $request
-     * @param int $openCallId
-     * @return \Illuminate\Http\Response
-     */
-    public function store(CreateOpenCallForm $request, $openCallId)
+    public function store(CreateOpenCallForm $request, $openCallId): RedirectResponse
     {
         $data = array_merge(['open_call_id' => $openCallId], $request->validated());
         $data['field_name'] = Str::slug($data['field_name']);
         OpenCallFormField::create($data);
 
-        return redirect()->route('admin.opencall.opencall-form.index', $openCallId)
-            ->with('success', 'Data Added Successfully !');
+        return to_route('admin.opencall.opencall-form.index', $openCallId)->with('success', 'Data Added Successfully !');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\OpenCallFormField $opencallFormField
-     * @param int $openCallFormId
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id, $openCallFormId)
+    public function edit($id, $openCallFormId): View
     {
         $opencallFormField = OpenCallFormField::findOrFail($openCallFormId);
         $data = [
@@ -92,36 +66,21 @@ class OpenCallFormController extends Controller
         return view('admin.opencall.form.create', compact('data'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  App\Http\Requests\CreateOpenCallForm $request
-     * @param  \App\Models\OpenCall  $openCall
-     * @return \Illuminate\Http\Response
-     */
-    public function update(CreateOpenCallForm $request, $id, $openCallFormId)
+    public function update(CreateOpenCallForm $request, $id, $openCallFormId): RedirectResponse
     {
         $opencallFormField = OpenCallFormField::findOrFail($openCallFormId);
-        $data = array_merge(['open_call_id' => $id], $request->validated());
+        $data = [...['open_call_id' => $id], ...$request->validated()];
         $data['field_name'] = Str::slug($data['field_name']);
         $opencallFormField->update($data);
 
-        return redirect()->route('admin.opencall.opencall-form.index', $id)
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.opencall.opencall-form.index', $id)->with('success', 'Data Updated Successfully !');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\OpenCall  $openCall
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id, $openCallFormId)
+    public function destroy($id, $openCallFormId): RedirectResponse
     {
         $opencallFormField = OpenCallFormField::findOrFail($openCallFormId);
         $opencallFormField->delete();
 
-        return redirect()->route('admin.opencall.opencall-form.index', $id)
-            ->with('success', 'Data Updated Successfully !');
+        return to_route('admin.opencall.opencall-form.index', $id)->with('success', 'Data Updated Successfully !');
     }
 }

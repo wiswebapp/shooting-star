@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class OpenCall extends Model
 {
@@ -29,5 +30,17 @@ class OpenCall extends Model
 
     public function opencallResponse() {
         return $this->hasMany(OpenCallResponse::class);
+    }
+
+    protected function start_date(): Attribute {
+        return Attribute::make(
+            get: fn (string $value) => date('d M Y', strtotime($value)),
+        );
+    }
+
+    protected function end_date(): Attribute {
+        return Attribute::make(
+            get: fn (string $value) => date('d M Y', strtotime($value)),
+        );
     }
 }

@@ -15,7 +15,7 @@
             <div class="tab">
                 <div class="exhibutionData text-center mb-5">
                 <h2 class="exhibutionTitle">{{$exhibition->title}}</h2>
-                <p class="exhibutionDate">{{ (date('d M',strtotime($exhibition->start_date)))}} - {{ (date('d M Y',strtotime($exhibition->end_date)))}}</p>
+                <p class="exhibutionDate">{{ $exhibition->start_date }} - {{ $exhibition->end_date }}</p>
                 </div>
                 <ul class="nav nav-line" role="tablist">
                 <li class="nav-item">

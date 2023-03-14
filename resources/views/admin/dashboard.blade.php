@@ -60,8 +60,8 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $page->category->name }}</td>
                             <td>{{ $page['title'] }}</td>
-                            <td>{{ date('d-m-Y', strtotime($page['start_date'])) }}</td>
-                            <td>{{ date('d-m-Y', strtotime($page['end_date'])) }}</td>
+                            <td>{{ $page['start_date'] }}</td>
+                            <td>{{ $page['end_date'] }}</td>
                             <td>
                                 <a href="{{ route('admin.exhibition.show', $page['id']) }}" class="btn btn-sm btn-default">View</a>
                             </td>

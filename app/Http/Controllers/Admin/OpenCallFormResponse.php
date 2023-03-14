@@ -6,28 +6,19 @@ use Illuminate\Support\Str;
 use App\Models\OpenCallResponse;
 use App\Http\Controllers\Controller;
 use App\Models\OpenCallFormField;
+use Illuminate\View\View;
 
 class OpenCallFormResponse extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function index(): View
     {
         return view('admin.opencall.response.index', [
             'opencallResponse' => OpenCallResponse::with('opencall')->paginate(10),
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\OpenCallResponse  $openCallResponse
-     * @return \Illuminate\Http\Response
-     */
-    public function show(OpenCallResponse $openCallResponse)
+    public function show(OpenCallResponse $openCallResponse): View
     {
         if ($openCallResponse->art_work_title) {
             $artworkData = [
